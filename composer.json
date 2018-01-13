@@ -1,13 +1,13 @@
 {
     "name": "kuria/url",
-    "description": "Parsing, modifying and building URLs.",
+    "description": "Parsing, modifying and building URLs",
     "keywords": ["url", "url-parsing", "url-building", "url-parser", "url-builder", "parse", "build", "parameter", "query-string", "parse_url", "parse_str"],
     "license": "MIT",
     "require": {
-        "php": ">=7.1.0"
+        "php": ">=7.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.2"
+        "phpunit/phpunit": "^6.5"
     },
     "autoload": {
         "psr-4": {
