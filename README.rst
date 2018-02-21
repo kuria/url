@@ -168,7 +168,8 @@ Getting query parameters
        $url->has('foo'),
        $url->has('nonexistent'),
        $url->get('foo'),
-       $url->get('lorem')
+       $url->get('lorem'),
+       $url->get('nonexistent')
    );
 
 Output:
@@ -184,31 +185,12 @@ Output:
     [1]=>
     string(5) "dolor"
   }
-
-
-Falling back to a default value
--------------------------------
-
-Attempting to ``get()`` an undefined query parameter will result in an exception. If
-you want to fall back to a default value in such cases, use ``tryGet()`` instead:
-
-.. code:: php
-
-   <?php
-
-   var_dump(
-       $url->tryGet('foo'),
-       $url->tryGet('nonexistent'),
-       $url->tryGet('nonexistent', 'custom-default-value')
-   );
-
-Output:
-
-::
-
-  string(3) "bar"
   NULL
-  string(20) "custom-default-value"
+
+
+.. NOTE::
+
+   Getting a nonexistent parameter returns ``NULL`` or the specified default value.
 
 
 Manipulating query parameters

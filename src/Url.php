@@ -281,33 +281,16 @@ class Url
     }
 
     /**
-     * Get query parameter value
+     * Attempt to retrieve a query parameter value
+     *
+     * Returns NULL if the query parameter is not defined.
      *
      * @param string|int $parameter
-     * @throws UndefinedQueryParameterException if the query parameter is not defined
      * @return mixed
      */
     function get($parameter)
     {
-        if (!array_key_exists($parameter, $this->query)) {
-            throw new UndefinedQueryParameterException(sprintf('Undefined query parameter "%s"', $parameter));
-        }
-
-        return $this->query[$parameter];
-    }
-
-    /**
-     * Attempt to retrieve a query parameter value
-     *
-     * If the query parameter is not defined, returns the default value.
-     *
-     * @param string|int $parameter
-     * @param mixed $default
-     * @return mixed
-     */
-    function tryGet($parameter, $default = null)
-    {
-        return array_key_exists($parameter, $this->query) ? $this->query[$parameter] : $default;
+        return $this->query[$parameter] ?? null;
     }
 
     /**

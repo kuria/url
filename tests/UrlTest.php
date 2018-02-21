@@ -4,7 +4,6 @@ namespace Kuria\Url;
 
 use Kuria\Url\Exception\IncompleteUrlException;
 use Kuria\Url\Exception\InvalidUrlException;
-use Kuria\Url\Exception\UndefinedQueryParameterException;
 use PHPUnit\Framework\TestCase;
 
 class UrlTest extends TestCase
@@ -320,19 +319,8 @@ class UrlTest extends TestCase
 
         $this->assertSame('bar', $url->get('foo'));
         $this->assertSame('ipsum', $url->get('lorem'));
-
-        $this->assertSame('bar', $url->tryGet('foo'));
-        $this->assertSame('ipsum', $url->tryGet('lorem'));
-        $this->assertNull($url->tryGet('nonexistent'));
-        $this->assertSame('default', $url->tryGet('nonexistent', 'default'));
-        $this->assertNull($url->tryGet('null-param', 'default'));
-    }
-
-    function testExceptionWhenGettingUndefinedQueryParameter()
-    {
-        $this->expectException(UndefinedQueryParameterException::class);
-
-        (new Url())->get('nonexistent');
+        $this->assertNull($url->get('nonexistent'));
+        $this->assertNull($url->get('null-param'));
     }
 
     /**
