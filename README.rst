@@ -3,6 +3,9 @@ Url
 
 Parsing, modifying and building URLs.
 
+.. image:: https://travis-ci.org/kuria/url.svg?branch=master
+   :target: https://travis-ci.org/kuria/url
+
 .. contents::
 
 
@@ -53,6 +56,11 @@ Example output:
 ::
 
   http://localhost/test.php
+
+.. NOTE::
+
+   If ``$_SERVER['HTTP_HOST']`` is undefined, ``localhost`` will be used as the default.
+   This can be changed using ``Url::setDefaultCurrentHost()``.
 
 
 Creating a new URL
@@ -188,11 +196,6 @@ Output:
   NULL
 
 
-.. NOTE::
-
-   Getting a nonexistent parameter returns ``NULL`` or the specified default value.
-
-
 Manipulating query parameters
 =============================
 
@@ -290,8 +293,10 @@ Output:
 Using ``buildAbsolute()``
 -------------------------
 
-This method will always return an absolute URL. If the host is not defined,
-an exception will be thrown instead.
+This method will always return an absolute URL.
+
+If the host is not defined, the current host and scheme (if not defined) will be
+used instead. See `Getting the current URL`_
 
 .. code:: php
 

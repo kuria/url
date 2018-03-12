@@ -2,31 +2,31 @@
 
 namespace Kuria\Url;
 
-use Kuria\Url\Exception\IncompleteUrlException;
 use Kuria\Url\Exception\InvalidUrlException;
-use Kuria\Url\Exception\UndefinedQueryParameterException;
 
-class Url
+final class Url
 {
     /** @var static|null */
-    protected static $current;
+    private static $current;
+    /** @var string */
+    private static $defaultCurrentHost = 'localhost';
 
     /** @var string|null */
-    protected $scheme;
+    private $scheme;
     /** @var string|null */
-    protected $host;
+    private $host;
     /** @var int|null */
-    protected $port;
+    private $port;
     /** @var string|null */
-    protected $user;
+    private $user;
     /** @var string|null */
-    protected $password;
+    private $password;
     /** @var string */
-    protected $path;
+    private $path;
     /** @var array */
-    protected $query;
+    private $query;
     /** @var string|null */
-    protected $fragment;
+    private $fragment;
 
     function __construct(
         ?string $scheme = null,
@@ -95,24 +95,27 @@ class Url
      * @see Url::clearCurrentUrlCache() to clear the internal cache
      * @return static
      */
-    static function current(?string $defaultHost = 'localhost')
+    static function current()
     {
-        if (static::$current === null) {
-            $currentRequestUri = static::getCurrentRequestUri();
-
-            if ($currentRequestUri !== '' && $currentRequestUri[0] !== '/') {
-                $currentRequestUri = '/' . $currentRequestUri;
-            }
-
-            static::$current = static::parse(sprintf(
+        if (self::$current === null) {
+            self::$current = self::parse(sprintf(
                 '%s://%s%s',
                 !empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http',
-                $_SERVER['HTTP_HOST'] ?? $defaultHost,
-                $currentRequestUri
+                $_SERVER['HTTP_HOST'] ?? self::$defaultCurrentHost,
+                self::getCurrentRequestUri()
             ));
         }
 
-        return clone static::$current;
+        return clone self::$current;
+    }
+
+    /**
+     * Set a default host to be used when determining current URL
+     */
+    static function setDefaultCurrentHost(string $host): void
+    {
+        self::$defaultCurrentHost = $host;
+        self::clearCurrentUrlCache();
     }
 
     /**
@@ -122,7 +125,7 @@ class Url
      */
     static function clearCurrentUrlCache(): void
     {
-        static::$current = null;
+        self::$current = null;
     }
 
     function getScheme(): ?string
@@ -349,19 +352,24 @@ class Url
     /**
      * Build an absolute URL
      *
-     * @throws IncompleteUrlException if host has not been defined
+     * If no host is specified, uses the current host.
      */
     function buildAbsolute(): string
     {
         $output = '';
 
         if ($this->host === null) {
-            throw new IncompleteUrlException('Cannot build absolute URL without host being defined');
+            $current = self::current();
+            $fullHost = $current->getFullHost();
+            $scheme = $this->scheme ?? $current->getScheme();
+        } else {
+            $fullHost = $this->getFullHost();
+            $scheme = $this->scheme;
         }
 
         // scheme
-        if ($this->scheme !== null) {
-            $output .= $this->scheme;
+        if ($scheme !== null) {
+            $output .= $scheme;
             $output .= '://';
         } else {
             // protocol-relative
@@ -383,7 +391,7 @@ class Url
         }
 
         // host, port
-        $output .= $this->getFullHost();
+        $output .= $fullHost;
 
         // ensure a forward slash between host and a non-empty path
         if ($this->path !== '' && $this->path[0] !== '/') {
@@ -421,7 +429,7 @@ class Url
         return $output;
     }
 
-    protected static function getCurrentRequestUri(): string
+    private static function getCurrentRequestUri(): string
     {
         if (isset($_SERVER['REQUEST_URI'])) {
             return $_SERVER['REQUEST_URI'];
@@ -439,6 +447,10 @@ class Url
 
         if (!empty($_SERVER['QUERY_STRING'])) {
             $requestUri .= '?' . $_SERVER['QUERY_STRING'];
+        }
+
+        if ($requestUri !== '' && $requestUri[0] !== '/') {
+            $requestUri = '/' . $requestUri;
         }
 
         return $requestUri;

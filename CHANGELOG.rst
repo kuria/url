@@ -1,6 +1,16 @@
 Changelog
 #########
 
+3.0.0
+*****
+
+- ``Url`` is now ``final``
+- ``Url::buildAbsolute()`` now uses the current host instead of throwing ``IncompleteUrlException``
+- added ``Url::setDefaultCurrentHost()``, removed the parameter from ``Url::current()``
+- changed class members from protected to private
+- cs fixes, added codestyle checks
+
+
 2.0.0
 *****
 

@@ -2,7 +2,6 @@
 
 namespace Kuria\Url;
 
-use Kuria\Url\Exception\IncompleteUrlException;
 use Kuria\Url\Exception\InvalidUrlException;
 use PHPUnit\Framework\TestCase;
 
@@ -215,7 +214,8 @@ class UrlTest extends TestCase
                     $url->set('lorem', ['ipsum', 'dolor']);
 
                     $expectedMethodResults['getQuery'] = ['param' => 'value', 'lorem' => ['ipsum', 'dolor']];
-                    $expectedMethodResults['build'] = 'ftp://john.smith:123456@localhost:8080/foo/bar?param=value&lorem%5B0%5D=ipsum&lorem%5B1%5D=dolor';
+                    $expectedMethodResults['build'] = 'ftp://john.smith:123456@localhost:8080/foo/bar'
+                        . '?param=value&lorem%5B0%5D=ipsum&lorem%5B1%5D=dolor';
                     $expectedMethodResults['buildRelative'] = 'foo/bar?param=value&lorem%5B0%5D=ipsum&lorem%5B1%5D=dolor';
                     break;
 
@@ -300,11 +300,29 @@ class UrlTest extends TestCase
         } while (true);
     }
 
-    function testExceptionWhenBuildingAbsoluteUrlWithoutHost()
+    function testBuildAbsoluteShouldUseCurrentHostIfNoneDefined()
     {
-        $this->expectException(IncompleteUrlException::class);
+        Url::clearCurrentUrlCache();
 
-        (new Url())->buildAbsolute();
+        $this->setServerProperties(['HTTP_HOST' => 'current-host']);
+
+        $url = new Url();
+        $url->setPath('/bar');
+
+        $this->assertSame('http://current-host/bar', $url->buildAbsolute());
+    }
+
+    function testBuildAbsoluteShouldUseCurrentHostAndPortIfNoneDefinedWithSpecifiedScheme()
+    {
+        Url::clearCurrentUrlCache();
+
+        $this->setServerProperties(['HTTP_HOST' => 'example:8080']);
+
+        $url = new Url();
+        $url->setPath('/bar');
+        $url->setScheme('ftp');
+
+        $this->assertSame('ftp://example:8080/bar', $url->buildAbsolute());
     }
 
     function testQueryParameterRetrieval()
@@ -330,16 +348,7 @@ class UrlTest extends TestCase
     {
         Url::clearCurrentUrlCache();
 
-        $_SERVER['HTTPS'] = null;
-        $_SERVER['QUERY_STRING'] = null;
-        $_SERVER['HTTP_HOST'] = null;
-        $_SERVER['REQUEST_URI'] = null;
-        $_SERVER['HTTP_X_REWRITE_URL'] = null;
-        $_SERVER['HTTP_REQUEST_URI'] = null;
-        $_SERVER['SCRIPT_NAME'] = null;
-        $_SERVER['PHP_SELF'] = null;
-
-        $_SERVER = array_merge($_SERVER, $serverProperties);
+        $this->setServerProperties($serverProperties);
 
         $url = Url::current();
 
@@ -430,16 +439,24 @@ class UrlTest extends TestCase
         ];
     }
 
-    function testCustomDefaultHostForCurrentUrl()
+    function testSetDefaultCurrentHost()
     {
         Url::clearCurrentUrlCache();
+        Url::setDefaultCurrentHost('custom-default-host');
 
         $_SERVER['REQUEST_URI'] = '/path';
-        $_SERVER['HTTP_HOST'] = null;
+        unset($_SERVER['HTTP_HOST']);
 
-        $url = Url::current('custom-default-host');
+        $this->assertSame('http://custom-default-host/path', Url::current()->build());
+    }
 
-        $this->assertSame('http://custom-default-host/path', $url->build());
+    function testSetDefaultCurrentHostShouldClearCurentUrlCache()
+    {
+        Url::setDefaultCurrentHost('foo');
+        $this->assertSame('foo', Url::current()->getHost());
+
+        Url::setDefaultCurrentHost('bar');
+        $this->assertSame('bar', Url::current()->getHost());
     }
 
     private function assertUrlMethodResults(Url $url, array $expectedMethodResults)
@@ -465,7 +482,27 @@ class UrlTest extends TestCase
         ];
 
         foreach ($expectedMethodResults as $method => $expectedValue) {
-            $this->assertSame($expectedValue, $url->{$method}(), sprintf('Expected Url::%s() to yield the expected value', $method));
+            $this->assertSame(
+                $expectedValue,
+                $url->{$method}(),
+                sprintf('Expected Url::%s() to yield the expected value', $method)
+            );
         }
+    }
+
+    private function setServerProperties(array $serverProperties = [])
+    {
+        $_SERVER = $serverProperties
+            + [
+                'HTTPS' => null,
+                'QUERY_STRING' => null,
+                'HTTP_HOST' => null,
+                'REQUEST_URI' => null,
+                'HTTP_X_REWRITE_URL' => null,
+                'HTTP_REQUEST_URI' => null,
+                'SCRIPT_NAME' => null,
+                'PHP_SELF' => null,
+            ]
+            + $_SERVER;
     }
 }
