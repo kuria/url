@@ -280,7 +280,7 @@ final class Url
      */
     function has($parameter): bool
     {
-        return array_key_exists($parameter, $this->query);
+        return key_exists($parameter, $this->query);
     }
 
     /**
