@@ -37,31 +37,31 @@ class UrlTest extends TestCase
                 'foo',
                 [
                     'getPath' => 'foo',
-                ]
+                ],
             ],
             'absolute path only' => [
                 '/foo',
                 [
                     'getPath' => '/foo',
-                ]
+                ],
             ],
             'fragment only' => [
                 '#foo-bar',
                 [
                     'getFragment' => 'foo-bar',
-                ]
+                ],
             ],
             'query only' => [
                 '?foo=bar&lorem=ipsum',
                 [
                     'getQuery' => ['foo' => 'bar', 'lorem' => 'ipsum'],
-                ]
+                ],
             ],
             'protocol-relative host' => [
                 '//example.com',
                 [
                     'getHost' => 'example.com',
-                ]
+                ],
             ],
             'protocol-relative host with port' => [
                 '//example.com:80',
@@ -70,7 +70,7 @@ class UrlTest extends TestCase
                     'getFullHost' => 'example.com:80',
                     'getPort' => 80,
                     'buildRelative' => '',
-                ]
+                ],
             ],
             'protocol-relative host with auth' => [
                 '//user:pass@example.com',
@@ -79,7 +79,7 @@ class UrlTest extends TestCase
                     'getPassword' => 'pass',
                     'getHost' => 'example.com',
                     'buildRelative' => '',
-                ]
+                ],
             ],
             'host with protocol' => [
                 'http://example.com',
@@ -87,7 +87,7 @@ class UrlTest extends TestCase
                     'getScheme' => 'http',
                     'getHost' => 'example.com',
                     'buildRelative' => '',
-                ]
+                ],
             ],
             'host with protocol and port' => [
                 'http://example.com:80',
@@ -97,7 +97,7 @@ class UrlTest extends TestCase
                     'getFullHost' => 'example.com:80',
                     'getPort' => 80,
                     'buildRelative' => '',
-                ]
+                ],
             ],
             'host with protocol and auth' => [
                 'http://user:pass@example.com',
@@ -107,7 +107,7 @@ class UrlTest extends TestCase
                     'getScheme' => 'http',
                     'getHost' => 'example.com',
                     'buildRelative' => '',
-                ]
+                ],
             ],
             'absolute url' => [
                 'http://www.example.com/foo/bar.html',
@@ -116,7 +116,7 @@ class UrlTest extends TestCase
                     'getHost' => 'www.example.com',
                     'getPath' => '/foo/bar.html',
                     'buildRelative' => '/foo/bar.html',
-                ]
+                ],
             ],
             'url with all components' => [
                 'https://user:pass@example.com:88/foo/bar.html?foo=bar&baz%5B0%5D=zero&baz%5B1%5D=one#test',
@@ -131,7 +131,7 @@ class UrlTest extends TestCase
                     'getQuery' => ['foo' => 'bar', 'baz' => ['zero', 'one']],
                     'getFragment' => 'test',
                     'buildRelative' => '/foo/bar.html?foo=bar&baz%5B0%5D=zero&baz%5B1%5D=one#test',
-                ]
+                ],
             ],
         ];
     }
