@@ -88,10 +88,12 @@ final class Url
     /**
      * Get current URL
      *
-     * The URL is determined using $_SERVER properties and the result is cached internally.
+     * If no URL has been specified using Url::setCurrent(), it will be determined
+     * using $_SERVER properties. The result is cached internally.
      *
      * Returns a new instance each time.
      *
+     * @see Url::setCurrent() to specify current URL
      * @see Url::clearCurrentUrlCache() to clear the internal cache
      * @return static
      */
@@ -107,6 +109,14 @@ final class Url
         }
 
         return clone self::$current;
+    }
+
+    /**
+     * Specify current URL
+     */
+    static function setCurrent(self $url): void
+    {
+        self::$current = $url;
     }
 
     /**

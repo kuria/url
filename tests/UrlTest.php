@@ -459,6 +459,13 @@ class UrlTest extends TestCase
         $this->assertSame('bar', Url::current()->getHost());
     }
 
+    function testSetCurrent()
+    {
+        Url::setCurrent(Url::parse('https://example.com/foo'));
+
+        $this->assertSame('https://example.com/foo', Url::current()->build());
+    }
+
     private function assertUrlMethodResults(Url $url, array $expectedMethodResults)
     {
         $expectedMethodResults += [

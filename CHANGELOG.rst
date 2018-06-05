@@ -1,6 +1,12 @@
 Changelog
 #########
 
+3.1.0
+*****
+
+- added ``Url::setCurrent()``
+
+
 3.0.0
 *****
 
