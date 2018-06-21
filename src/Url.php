@@ -8,23 +8,31 @@ final class Url
 {
     /** @var static|null */
     private static $current;
+
     /** @var string */
     private static $defaultCurrentHost = 'localhost';
 
     /** @var string|null */
     private $scheme;
+
     /** @var string|null */
     private $host;
+
     /** @var int|null */
     private $port;
+
     /** @var string|null */
     private $user;
+
     /** @var string|null */
     private $password;
+
     /** @var string */
     private $path;
+
     /** @var array */
     private $query;
+
     /** @var string|null */
     private $fragment;
 
