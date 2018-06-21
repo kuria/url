@@ -10,7 +10,7 @@ class UrlTest extends TestCase
     /**
      * @dataProvider provideUrls
      */
-    function testParseAndRebuild(string $urlToParse, array $expectedMethodResults)
+    function testShouldParseAndRebuild(string $urlToParse, array $expectedMethodResults)
     {
         $expectedMethodResults += [
             'build' => $urlToParse,
@@ -136,14 +136,14 @@ class UrlTest extends TestCase
         ];
     }
 
-    function testExceptionOnInvalidUrl()
+    function testShouldThrowExceptionOnInvalidUrl()
     {
         $this->expectException(InvalidUrlException::class);
 
         Url::parse('//example.com:xx');
     }
 
-    function testQueryString()
+    function testShouldGetQueryString()
     {
         $url = new Url();
         $url->setQuery(['foo' => 'bar', 'lorem' => 'ipsum']);
@@ -151,7 +151,7 @@ class UrlTest extends TestCase
         $this->assertSame('foo=bar&lorem=ipsum', $url->getQueryString());
     }
 
-    function testUrlManipulation()
+    function testShouldManipulateUrl()
     {
         $url = new Url();
         $step = 0;
@@ -325,7 +325,7 @@ class UrlTest extends TestCase
         $this->assertSame('ftp://example:8080/bar', $url->buildAbsolute());
     }
 
-    function testQueryParameterRetrieval()
+    function testShouldRetrieveQueryParameters()
     {
         $url = new Url();
         $url->setQuery(['foo' => 'bar', 'lorem' => 'ipsum', 'null-param' => null]);
@@ -344,7 +344,7 @@ class UrlTest extends TestCase
     /**
      * @dataProvider provideServerProperties
      */
-    function testDeterminingCurrentUrl(array $serverProperties, string $expectedUrl)
+    function testShouldDetermineCurrentUrl(array $serverProperties, string $expectedUrl)
     {
         Url::clearCurrentUrlCache();
 
@@ -439,7 +439,7 @@ class UrlTest extends TestCase
         ];
     }
 
-    function testSetDefaultCurrentHost()
+    function testShouldSetDefaultCurrentHost()
     {
         Url::clearCurrentUrlCache();
         Url::setDefaultCurrentHost('custom-default-host');
@@ -450,7 +450,7 @@ class UrlTest extends TestCase
         $this->assertSame('http://custom-default-host/path', Url::current()->build());
     }
 
-    function testSetDefaultCurrentHostShouldClearCurentUrlCache()
+    function testSettingDefaultCurrentHostShouldClearCurentUrlCache()
     {
         Url::setDefaultCurrentHost('foo');
         $this->assertSame('foo', Url::current()->getHost());
@@ -459,7 +459,7 @@ class UrlTest extends TestCase
         $this->assertSame('bar', Url::current()->getHost());
     }
 
-    function testSetCurrent()
+    function testShouldSetCurrent()
     {
         Url::setCurrent(Url::parse('https://example.com/foo'));
 
