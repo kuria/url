@@ -3,8 +3,8 @@ Url
 
 Parsing, modifying and building URLs.
 
-.. image:: https://travis-ci.org/kuria/url.svg?branch=master
-   :target: https://travis-ci.org/kuria/url
+.. image:: https://travis-ci.com/kuria/url.svg?branch=master
+   :target: https://travis-ci.com/kuria/url
 
 .. contents::
 

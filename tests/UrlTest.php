@@ -2,10 +2,10 @@
 
 namespace Kuria\Url;
 
+use Kuria\DevMeta\Test;
 use Kuria\Url\Exception\InvalidUrlException;
-use PHPUnit\Framework\TestCase;
 
-class UrlTest extends TestCase
+class UrlTest extends Test
 {
     /**
      * @dataProvider provideUrls
