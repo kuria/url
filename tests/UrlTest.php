@@ -23,7 +23,7 @@ class UrlTest extends Test
         $this->assertUrlMethodResults($url, $expectedMethodResults);
     }
 
-    function provideUrls(): array
+    function provideUrls()
     {
         return [
             // urlToParse, expectedMethodResults
@@ -355,7 +355,7 @@ class UrlTest extends Test
         $this->assertSame($expectedUrl, $url->build());
     }
 
-    function provideServerProperties(): array
+    function provideServerProperties()
     {
         return [
             // serverProperties, expectedUrl
