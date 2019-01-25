@@ -1,6 +1,16 @@
 Changelog
 #########
 
+4.0.0
+*****
+
+- removed the following ``Url`` methods: ``current()``, ``setCurrent()``,
+  ``setDefaultCurrentHost()`` and ``clearCurrentUrlCache()``
+  (use the `kuria/request-info <https://github.com/kuria/request-info/>`_ component instead)
+- ``Url::buildAbsolute()`` now throws an exception if the host is not defined
+  (instead of defaulting to the current host)
+
+
 3.1.0
 *****
 

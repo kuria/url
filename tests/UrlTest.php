@@ -3,6 +3,7 @@
 namespace Kuria\Url;
 
 use Kuria\DevMeta\Test;
+use Kuria\Url\Exception\IncompleteUrlException;
 use Kuria\Url\Exception\InvalidUrlException;
 
 class UrlTest extends Test
@@ -300,29 +301,11 @@ class UrlTest extends Test
         } while (true);
     }
 
-    function testBuildAbsoluteShouldUseCurrentHostIfNoneDefined()
+    function testShouldThrowExceptionIfBuildingAbsoluteUrlWithoutHost()
     {
-        Url::clearCurrentUrlCache();
+        $this->expectException(IncompleteUrlException::class);
 
-        $this->setServerProperties(['HTTP_HOST' => 'current-host']);
-
-        $url = new Url();
-        $url->setPath('/bar');
-
-        $this->assertSame('http://current-host/bar', $url->buildAbsolute());
-    }
-
-    function testBuildAbsoluteShouldUseCurrentHostAndPortIfNoneDefinedWithSpecifiedScheme()
-    {
-        Url::clearCurrentUrlCache();
-
-        $this->setServerProperties(['HTTP_HOST' => 'example:8080']);
-
-        $url = new Url();
-        $url->setPath('/bar');
-        $url->setScheme('ftp');
-
-        $this->assertSame('ftp://example:8080/bar', $url->buildAbsolute());
+        (new Url())->buildAbsolute();
     }
 
     function testShouldRetrieveQueryParameters()
@@ -339,131 +322,6 @@ class UrlTest extends Test
         $this->assertSame('ipsum', $url->get('lorem'));
         $this->assertNull($url->get('nonexistent'));
         $this->assertNull($url->get('null-param'));
-    }
-
-    /**
-     * @dataProvider provideServerProperties
-     */
-    function testShouldDetermineCurrentUrl(array $serverProperties, string $expectedUrl)
-    {
-        Url::clearCurrentUrlCache();
-
-        $this->setServerProperties($serverProperties);
-
-        $url = Url::current();
-
-        $this->assertSame($expectedUrl, $url->build());
-    }
-
-    function provideServerProperties()
-    {
-        return [
-            // serverProperties, expectedUrl
-            'standard' => [
-                [
-                    'REQUEST_URI' => '/path?foo=1',
-                    'HTTP_HOST' => 'example.com',
-                ],
-                'http://example.com/path?foo=1',
-            ],
-            'https on' => [
-                [
-                    'REQUEST_URI' => '/path?foo=2',
-                    'HTTP_HOST' => 'example.com',
-                    'HTTPS' => 'on',
-                ],
-                'https://example.com/path?foo=2',
-            ],
-            'https off' => [
-                [
-                    'REQUEST_URI' => '/path?foo=3',
-                    'HTTP_HOST' => 'example.com',
-                    'HTTPS' => 'off',
-                ],
-                'http://example.com/path?foo=3',
-            ],
-            'no host' => [
-                [
-                    'REQUEST_URI' => '/path?foo=4',
-                ],
-                'http://localhost/path?foo=4',
-            ],
-            'ISAPI_Rewrite 3.x' => [
-                [
-                    'HTTP_X_REWRITE_URL' => '/path?foo=5',
-                    'HTTP_HOST' => 'example.com',
-                ],
-                'http://example.com/path?foo=5',
-            ],
-            'ISAPI_Rewrite 2.x' => [
-                [
-                    'HTTP_REQUEST_URI' => '/path?foo=6',
-                    'HTTP_HOST' => 'example.com',
-                ],
-                'http://example.com/path?foo=6',
-            ],
-            'script name fallback' => [
-                [
-                    'SCRIPT_NAME' => 'script.php',
-                    'HTTP_HOST' => 'example.com',
-                ],
-                'http://example.com/script.php',
-            ],
-            'script name fallback with query string and path' => [
-                [
-                    'SCRIPT_NAME' => '/path/script.php',
-                    'HTTP_HOST' => 'example.com',
-                    'QUERY_STRING' => 'foo=7',
-                ],
-                'http://example.com/path/script.php?foo=7',
-            ],
-            'php self fallback' => [
-                [
-                    'PHP_SELF' => 'script.php',
-                    'HTTP_HOST' => 'example.com',
-                ],
-                'http://example.com/script.php',
-            ],
-            'php self fallback with query string and path' => [
-                [
-                    'PHP_SELF' => '/path/script.php',
-                    'HTTP_HOST' => 'example.com',
-                    'QUERY_STRING' => 'foo=8',
-                ],
-                'http://example.com/path/script.php?foo=8',
-            ],
-            'all env variables missing' => [
-                [],
-                'http://localhost',
-            ],
-        ];
-    }
-
-    function testShouldSetDefaultCurrentHost()
-    {
-        Url::clearCurrentUrlCache();
-        Url::setDefaultCurrentHost('custom-default-host');
-
-        $_SERVER['REQUEST_URI'] = '/path';
-        unset($_SERVER['HTTP_HOST']);
-
-        $this->assertSame('http://custom-default-host/path', Url::current()->build());
-    }
-
-    function testSettingDefaultCurrentHostShouldClearCurentUrlCache()
-    {
-        Url::setDefaultCurrentHost('foo');
-        $this->assertSame('foo', Url::current()->getHost());
-
-        Url::setDefaultCurrentHost('bar');
-        $this->assertSame('bar', Url::current()->getHost());
-    }
-
-    function testShouldSetCurrent()
-    {
-        Url::setCurrent(Url::parse('https://example.com/foo'));
-
-        $this->assertSame('https://example.com/foo', Url::current()->build());
     }
 
     private function assertUrlMethodResults(Url $url, array $expectedMethodResults)

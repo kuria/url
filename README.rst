@@ -13,7 +13,6 @@ Features
 ********
 
 - parsing URLs
-- determining the current URL from ``$_SERVER`` properties
 - building relative and absolute URLs, including protocol-relative URLs
 - getting, checking and setting individual URL components:
 
@@ -35,33 +34,6 @@ Requirements
 
 Usage
 *****
-
-Getting the current URL
-=======================
-
-The current URL is determined using ``$_SERVER`` properties.
-
-.. code:: php
-
-   <?php
-
-   use Kuria\Url\Url;
-
-   $url = Url::current();
-
-   echo $url;
-
-Example output:
-
-::
-
-  http://localhost/test.php
-
-.. NOTE::
-
-   If ``$_SERVER['HTTP_HOST']`` is undefined, ``localhost`` will be used as the default.
-   This can be changed using ``Url::setDefaultCurrentHost()``.
-
 
 Creating a new URL
 ==================
@@ -101,6 +73,11 @@ Parsing an URL
    use Kuria\Url\Url;
 
    $url = Url::parse('http://bob:123456@example.com:8080/test?foo=bar&lorem=ipsum#fragment');
+
+.. TIP::
+
+   If you wish to determine the current request URL, you may use the `kuria/request-info <https://github.com/kuria/request-info/>`_
+   component, which integrates with ``kuria/url``.
 
 
 Getting URL components
@@ -295,8 +272,8 @@ Using ``buildAbsolute()``
 
 This method will always return an absolute URL.
 
-If the host is not defined, the current host and scheme (if not defined) will be
-used instead. See `Getting the current URL`_
+If the host is not defined, ``Kuria\Url\Exception\IncompleteUrlException``
+will be thrown.
 
 .. code:: php
 

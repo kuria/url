@@ -2,16 +2,11 @@
 
 namespace Kuria\Url;
 
+use Kuria\Url\Exception\IncompleteUrlException;
 use Kuria\Url\Exception\InvalidUrlException;
 
 final class Url
 {
-    /** @var static|null */
-    private static $current;
-
-    /** @var string */
-    private static $defaultCurrentHost = 'localhost';
-
     /** @var string|null */
     private $scheme;
 
@@ -91,59 +86,6 @@ final class Url
             $query,
             $components['fragment'] ?? null
         );
-    }
-
-    /**
-     * Get current URL
-     *
-     * If no URL has been specified using Url::setCurrent(), it will be determined
-     * using $_SERVER properties. The result is cached internally.
-     *
-     * Returns a new instance each time.
-     *
-     * @see Url::setCurrent() to specify current URL
-     * @see Url::clearCurrentUrlCache() to clear the internal cache
-     * @return static
-     */
-    static function current()
-    {
-        if (self::$current === null) {
-            self::$current = self::parse(sprintf(
-                '%s://%s%s',
-                !empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http',
-                $_SERVER['HTTP_HOST'] ?? self::$defaultCurrentHost,
-                self::getCurrentRequestUri()
-            ));
-        }
-
-        return clone self::$current;
-    }
-
-    /**
-     * Specify current URL
-     */
-    static function setCurrent(self $url): void
-    {
-        self::$current = $url;
-    }
-
-    /**
-     * Set a default host to be used when determining current URL
-     */
-    static function setDefaultCurrentHost(string $host): void
-    {
-        self::$defaultCurrentHost = $host;
-        self::clearCurrentUrlCache();
-    }
-
-    /**
-     * Clear the internal current URL cache
-     *
-     * @see Url::current()
-     */
-    static function clearCurrentUrlCache(): void
-    {
-        self::$current = null;
     }
 
     function getScheme(): ?string
@@ -370,24 +312,19 @@ final class Url
     /**
      * Build an absolute URL
      *
-     * If no host is specified, uses the current host.
+     * @throws IncompleteUrlException if no host is specified
      */
     function buildAbsolute(): string
     {
         $output = '';
 
         if ($this->host === null) {
-            $current = self::current();
-            $fullHost = $current->getFullHost();
-            $scheme = $this->scheme ?? $current->getScheme();
-        } else {
-            $fullHost = $this->getFullHost();
-            $scheme = $this->scheme;
+            throw new IncompleteUrlException('No host specified');
         }
 
         // scheme
-        if ($scheme !== null) {
-            $output .= $scheme;
+        if ($this->scheme !== null) {
+            $output .= $this->scheme;
             $output .= '://';
         } else {
             // protocol-relative
@@ -409,7 +346,7 @@ final class Url
         }
 
         // host, port
-        $output .= $fullHost;
+        $output .= $this->getFullHost();
 
         // ensure a forward slash between host and a non-empty path
         if ($this->path !== '' && $this->path[0] !== '/') {
@@ -445,32 +382,5 @@ final class Url
         }
 
         return $output;
-    }
-
-    private static function getCurrentRequestUri(): string
-    {
-        if (isset($_SERVER['REQUEST_URI'])) {
-            return $_SERVER['REQUEST_URI'];
-        }
-
-        if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
-            return $_SERVER['HTTP_X_REWRITE_URL']; // ISAPI_Rewrite 3.x
-        }
-
-        if (isset($_SERVER['HTTP_REQUEST_URI'])) {
-            return $_SERVER['HTTP_REQUEST_URI']; // ISAPI_Rewrite 2.x
-        }
-
-        $requestUri = $_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? '';
-
-        if (!empty($_SERVER['QUERY_STRING'])) {
-            $requestUri .= '?' . $_SERVER['QUERY_STRING'];
-        }
-
-        if ($requestUri !== '' && $requestUri[0] !== '/') {
-            $requestUri = '/' . $requestUri;
-        }
-
-        return $requestUri;
     }
 }
