@@ -5,8 +5,11 @@ namespace Kuria\Url;
 use Kuria\Url\Exception\IncompleteUrlException;
 use Kuria\Url\Exception\InvalidUrlException;
 
-final class Url
+class Url
 {
+    const RELATIVE = 0;
+    const ABSOLUTE = 1;
+
     /** @var string|null */
     private $scheme;
 
@@ -15,12 +18,6 @@ final class Url
 
     /** @var int|null */
     private $port;
-
-    /** @var string|null */
-    private $user;
-
-    /** @var string|null */
-    private $password;
 
     /** @var string */
     private $path;
@@ -31,24 +28,25 @@ final class Url
     /** @var string|null */
     private $fragment;
 
+    /** @var int */
+    private $preferredFormat;
+
     function __construct(
         ?string $scheme = null,
         ?string $host = null,
         ?int $port = null,
-        ?string $user = null,
-        ?string $password = null,
         string $path = '',
         array $query = [],
-        ?string $fragment = null
+        ?string $fragment = null,
+        int $preferredFormat = self::ABSOLUTE
     ) {
         $this->scheme = $scheme;
         $this->host = $host;
         $this->port = $port;
-        $this->user = $user;
-        $this->password = $password;
         $this->path = $path;
         $this->query = $query;
         $this->fragment = $fragment;
+        $this->preferredFormat = $preferredFormat;
     }
 
     function __toString(): string
@@ -62,7 +60,7 @@ final class Url
      * @throws InvalidUrlException if the URL is invalid
      * @return static
      */
-    static function parse(string $url)
+    static function parse(string $url, ?int $preferredFormat = self::ABSOLUTE)
     {
         $components = parse_url($url);
 
@@ -80,11 +78,10 @@ final class Url
             $components['scheme'] ?? null,
             $components['host'] ?? null,
             $components['port'] ?? null,
-            $components['user'] ?? null,
-            $components['pass'] ?? null,
             $components['path'] ?? '',
             $query,
-            $components['fragment'] ?? null
+            $components['fragment'] ?? null,
+            $preferredFormat
         );
     }
 
@@ -153,36 +150,6 @@ final class Url
         return $this->port !== null;
     }
 
-    function getUser(): ?string
-    {
-        return $this->user;
-    }
-
-    function setUser(?string $user): void
-    {
-        $this->user = $user;
-    }
-
-    function hasUser(): bool
-    {
-        return $this->user !== null;
-    }
-
-    function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    function setPassword(?string $password): void
-    {
-        $this->password = $password;
-    }
-
-    function hasPassword(): bool
-    {
-        return $this->password !== null;
-    }
-
     function getPath(): string
     {
         return $this->path;
@@ -231,6 +198,22 @@ final class Url
     function hasFragment(): bool
     {
         return $this->fragment !== null;
+    }
+
+    function getPreferredFormat(): int
+    {
+        return $this->preferredFormat;
+    }
+
+    /**
+     * Define the preferred URL format to be returned by build()
+     *
+     * @see Url::RELATIVE
+     * @see URL::ABSOLUTE
+     */
+    function setPreferredFormat(int $preferredFormat): void
+    {
+        $this->preferredFormat = $preferredFormat;
     }
 
     /**
@@ -298,11 +281,17 @@ final class Url
     }
 
     /**
-     * Build an absolute or relative URL, depending on whether the host is defined
+     * Build an absolute or relative URL
+     *
+     * - if no host is specified, a relative URL will be returned
+     * - if the host is specified, an absolute URL will be returned
+     *   (unless the preferred format option is set to relative)
+     *
+     * @see Url::setPreferredFormat()
      */
     function build(): string
     {
-        if ($this->host !== null) {
+        if ($this->host !== null && $this->preferredFormat === static::ABSOLUTE) {
             return $this->buildAbsolute();
         } else {
             return $this->buildRelative();
@@ -329,20 +318,6 @@ final class Url
         } else {
             // protocol-relative
             $output .= '//';
-        }
-
-        // auth
-        if ($this->user !== null) {
-            $output .= $this->user;
-        }
-
-        if ($this->password !== null) {
-            $output .= ':';
-            $output .= $this->password;
-        }
-
-        if ($this->user !== null || $this->password !== null) {
-            $output .= '@';
         }
 
         // host, port

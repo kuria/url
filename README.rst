@@ -7,6 +7,7 @@ Parsing, modifying and building URLs.
    :target: https://travis-ci.com/kuria/url
 
 .. contents::
+   :depth: 3
 
 
 Features
@@ -19,8 +20,6 @@ Features
   - scheme
   - host
   - port
-  - user
-  - password
   - path
   - query parameters
   - fragment
@@ -72,12 +71,18 @@ Parsing an URL
 
    use Kuria\Url\Url;
 
-   $url = Url::parse('http://bob:123456@example.com:8080/test?foo=bar&lorem=ipsum#fragment');
+   $url = Url::parse('http://example.com:8080/test?foo=bar&lorem=ipsum#fragment');
 
 .. TIP::
 
    If you wish to determine the current request URL, you may use the `kuria/request-info <https://github.com/kuria/request-info/>`_
    component, which integrates with ``kuria/url``.
+
+.. NOTE::
+
+   Parsing URLs that contain username and a password is supported, but these components are ignored.
+
+   Such URLs are deprecated according to RFC 3986.
 
 
 Getting URL components
@@ -87,8 +92,6 @@ Getting URL components
 
    var_dump(
        $url->getScheme(),
-       $url->getUser(),
-       $url->getPassword(),
        $url->getHost(),
        $url->getFullHost(),
        $url->getPort(),
@@ -100,8 +103,6 @@ Getting URL components
    // checking whether a certain component is defined
    var_dump(
        $url->hasScheme(),
-       $url->hasUser(),
-       $url->hasPassword(),
        $url->hasHost(),
        $url->hasPort(),
        $url->hasPath(),
@@ -115,8 +116,6 @@ Output:
 ::
 
   string(4) "http"
-  string(3) "bob"
-  string(6) "123456"
   string(11) "example.com"
   string(16) "example.com:8080"
   int(8080)
@@ -128,8 +127,6 @@ Output:
     string(5) "ipsum"
   }
   string(8) "fragment"
-  bool(true)
-  bool(true)
   bool(true)
   bool(true)
   bool(true)
@@ -229,18 +226,14 @@ Removing all parameters
 Building URLs
 =============
 
-.. NOTE::
-
-   Building an URL with undefined scheme will yield a protocol-relative URL.
-
-   Example: *//localhost/test*
-
-
 Using ``build()`` or ``__toString()``
 -------------------------------------
 
-These methods will return an absolute or relative URL, depending on whether
-the host is defined.
+These methods will return an absolute or relative URL.
+
+- if no host is specified, a relative URL will be returned
+- if the host is specified, an absolute URL will be returned
+  (unless the `preferred format option <Specifying a preferred format_>`_ is set to relative)
 
 .. code:: php
 
@@ -265,6 +258,41 @@ Output:
 
   string(5) "/test"
   string(23) "http://example.com/test"
+
+
+Specifying a preferred format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, ``build()`` and ``__toString()`` return an absolute URL if the host is specified.
+
+This behavior can be changed by passing the ``$preferredFormat`` parameter to the constructor,
+``Url::parse()`` or the ``setPreferredFormat()`` method.
+
+- ``Url::RELATIVE`` - prefer generating a relative URL even if the host is specified
+- ``Url::ABSOLUTE`` - prefer generating an absolute URL if a host is specified
+
+.. code:: php
+
+   <?php
+
+   use Kuria\Url\Url;
+
+   $url = Url::parse('http://example.com/foo');
+
+   // print URL using the default preferred format (absolute)
+   echo $url, "\n";
+
+   // set the preferred format to relative
+   $url->setPreferredFormat(Url::RELATIVE);
+
+   echo $url, "\n";
+
+Output:
+
+::
+
+  http://example.com/foo
+  /foo
 
 
 Using ``buildAbsolute()``
@@ -294,6 +322,12 @@ Output:
 ::
 
   string(23) "http://example.com/test"
+
+.. NOTE::
+
+   Building an absolute URL with undefined scheme will yield a protocol-relative URL.
+
+   Example: *//localhost/test*
 
 
 Using ``buildRelative()``

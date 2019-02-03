@@ -1,6 +1,15 @@
 Changelog
 #########
 
+
+5.0.0
+*****
+
+- ``Url`` is no longer ``final``
+- added the preferred format option, which affects the output of ``Url::build()``
+- removed username and password support (see RFC 3986)
+
+
 4.0.0
 *****
 
